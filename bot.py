@@ -160,11 +160,11 @@ async def format_message() -> str:
 
     # account for when there are no assignments due soon
     if len(assignments) == 0:
-        return "No assignments due soon! 🎉"
+        return "**No assignments due soon! **🎉"
     else:
-        message = f"🚨 {len(assignments)} assignments due soon!\n\n"
+        message = f"🚨 **{len(assignments)} ASSIGNMENTS DUE SOON!**\n\n"
         message += "─────────────────────────\n"
-        message += "📚 **UPCOMING ASSIGNMENTS**\n"
+        message += "📚 **Upcoming Assignments**\n"
         message += "─────────────────────────\n\n"
 
         for assignment in assignments:
