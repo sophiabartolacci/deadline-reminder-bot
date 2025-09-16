@@ -108,6 +108,97 @@ python lambda_bot.py
 
 ---
 
+## [2025-09-16] - AWS Lambda Migration Planning and Interactive Features Research
+
+### **AWS Lambda Migration Strategy**
+**Type:** Infrastructure/Deployment
+**Description:** Researched and planned migration from local execution to AWS Lambda serverless architecture
+**Implementation:** 
+- **Lambda Handler Pattern:** Identified need for `lambda_handler(event, context)` entry point function
+- **Dual Compatibility:** Designed bot.py to work both locally and in Lambda using environment detection
+- **Dependency Packaging:** Learned Lambda requires all packages in deployment ZIP (no pip install at runtime)
+- **Credential Management:** Confirmed Parameter Store integration for secure token storage
+- **Scheduling:** EventBridge cron expressions for daily 8 AM execution
+- **Monitoring:** CloudWatch logs and SNS alerts for error tracking
+
+**Key AWS Services:**
+- **Parameter Store (SSM):** Free secure storage for API tokens
+- **Lambda:** Serverless code execution (15-minute max, 256MB memory sufficient)
+- **EventBridge:** Cron-based scheduling (`cron(0 8 * * ? *)`)
+- **CloudWatch:** Logging and error alerting
+- **IAM:** Execution roles with minimal required permissions
+
+**Migration Benefits:**
+- Eliminates need for always-on computer
+- 99.99% uptime reliability
+- Automatic scaling and error recovery
+- Professional cloud infrastructure
+- Essentially free for personal use (within AWS free tier)
+
+**Notes:** Decided against Terraform for this project size (5 AWS resources) - CLI commands more appropriate for learning and single-user setup
+
+---
+
+### **Interactive Discord Bot Features Research**
+**Type:** Feature Planning
+**Description:** Explored expansion possibilities using Notion API's full CRUD capabilities
+**Implementation:** Discovered Notion API supports Create, Read, Update, Delete operations beyond current read-only usage
+
+**Simple Interactions (Easy to Add):**
+```python
+# Slash Commands
+/deadlines          # Show current deadlines
+/complete "Math Homework"  # Mark assignment done
+/add "Physics Lab" "PHYS 201" "2024-01-20"  # Add new assignment
+
+# Reaction-Based Interactions  
+✅ Mark assignment as complete
+📅 Snooze reminder for 1 hour
+❌ Remove assignment
+📝 Add notes to assignment
+```
+
+**Medium Complexity Features:**
+- **Interactive Buttons:** [Complete] [Snooze 1hr] [Snooze 1day] [Details]
+- **Assignment Management:** Edit due dates, delete assignments, view details
+- **Smart Notifications:** Different urgency levels (🔴 URGENT, 🟡 Due tomorrow, 🟢 Due in 3 days)
+- **Multi-User Support:** Separate Notion databases per Discord user
+
+**Advanced Features:**
+- **Study Session Tracking:** Pomodoro timers, productivity metrics
+- **AI Integration:** Study plan generation, concept explanations, quiz generation
+- **Calendar Sync:** Two-way sync with Google Calendar/Outlook
+- **Analytics Dashboard:** Completion streaks, productivity stats, leaderboards
+
+**Required Notion API Permissions:**
+- ✅ Read content (already have)
+- ✅ Update content (for marking complete, editing)
+- ✅ Insert content (for adding new assignments)
+
+**Example Implementation:**
+```python
+# Mark assignment complete via Discord reaction
+await notion.pages.update(
+    page_id="assignment_page_id",
+    properties={"To Do": {"checkbox": True}}
+)
+
+# Add new assignment via slash command
+await notion.pages.create(
+    parent={"database_id": database_id},
+    properties={
+        "Assignment": {"title": [{"text": {"content": "New Homework"}}]},
+        "Class": {"select": {"name": "CS 380"}},
+        "Due Date": {"date": {"start": "2024-01-15"}},
+        "To Do": {"checkbox": False}
+    }
+)
+```
+
+**Notes:** Current bot uses ~10% of Notion API capabilities. Full assignment management system possible through Discord interface with bidirectional Notion sync.
+
+---
+
 ## Key Takeaways and Lessons Learned
 
 ### **Async/Await Programming Patterns**
@@ -265,24 +356,6 @@ Table: daily-deadline-users
 - **Retry Logic:** Handle API failures gracefully with exponential backoff
 - **Rate Limiting:** Respect Notion and Discord API limits
 - **Caching:** Cache Notion data to reduce API calls
-
-### **Cost Analysis**
-
-#### **AWS Lambda Pricing (Estimated):**
-- **Free Tier:** 1M requests/month, 400,000 GB-seconds compute time
-- **Beyond Free Tier:** $0.20 per 1M requests + $0.0000166667 per GB-second
-- **Daily Deadline Bot:** ~$2-5/month for 100 users, ~$10-15/month for 1000 users
-
-#### **Other AWS Services:**
-- **DynamoDB:** $1.25 per million read/write requests (very cheap for this use case)
-- **Parameter Store:** Free for standard parameters
-- **EventBridge:** $1 per million events (essentially free)
-- **S3 + CloudFront:** $1-3/month for static website hosting
-
-#### **Total Estimated Costs:**
-- **Development/Testing:** $0-2/month (within free tier)
-- **100 Users:** $5-10/month
-- **1000 Users:** $15-25/month
 
 ### **Why Lambda is Perfect for This Project**
 
